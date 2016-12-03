@@ -1,17 +1,33 @@
 #!/usr/bin/env python
+#############################################################
+# fr - find and replace                                     #
+# script to open a file and replace every instance          #
+#   of a given string with another, primary purpose is for  #
+#   retabbing files                                         #
+#                                                           # 
+#   -s --space NUM                                          #
+#       NUM is the number of sequential spaces              #
+#   -t --tab NUM                                            #
+#       NUM is the number of sequential tab characters      #
+#   -c --characters CHAR                                    #
+#       CHAR is the character sequence                      #
+#   -i --indent-only                                        #
+#       only change indents                                 #
+#############################################################
 
 import sys
 import os
+import pdb
 
-commands = ['-c','-s','-t']
+commands = ['-c','--characters','-s','--space','-t','--tab','-i']
 
 print sys.argv
 
 def pBadArg(arg):
     if arg:
-        print >> sys.stderr, "Error: Unexpected Argument " + arg 
+        sys.stderr.write("Error: Unexpected Argument " + arg) 
     else:
-        print >> sys.stderr, "Invalid arguments"
+        sys.stderr.write("Invalid arguments")
     quit()
 
 def pUsage():
@@ -25,6 +41,9 @@ def isInt(arg):
     except ValueError:
         return False
 
+def ignore():
+    return
+
 hasFile = False
 verbose = False
 prev = None
@@ -35,7 +54,7 @@ spaces = None
 
 def pDebug(arg):
     if arg is not None:
-        print "curArg: " + sys.argv[arg]
+        print "curArg: " + arg
     print "hasFile: " + str(hasFile)
     print "verbose: " + str(verbose)
     print "prev: " + str(prev)
@@ -44,58 +63,71 @@ def pDebug(arg):
     print "tabs: " + str(tabs)
     print "spaces: " + str(spaces)
 
-for arg in range(1,len(sys.argv)):
+for arg in sys.argv:
 
-    if os.path.isfile(sys.argv[arg]):
+    if arg == sys.argv[0]:
+        continue
+
+    elif os.path.isfile(arg):
         if not hasFile:
-            print sys.argv[arg] + " is a file: " + str(os.path.isfile(sys.argv[arg]))
-            pDebug(arg)
-            f = open(sys.argv[arg])
+            print arg + " is a file: " + str(os.path.isfile(arg))
+            #pDebug(arg)
+            f = open(arg)
             source = f.read()
             f.close()
             hasFile = True
         else:
-            pBadArg(sys.argv[arg])
+            pBadArg(arg)
 
-    elif sys.argv[arg] == "-t":
-        print "checking if " + sys.argv[arg]
-        pDebug(arg)
+    elif arg == "-t":
+        print "checking if " + arg
+        #pDebug(arg)
         if replace:
-            pBadArg(sys.argv[arg])
+            pBadArg(arg)
         elif find: 
             replace = '\t'
         else:
             find = '\t'
 
+    elif arg == "-s":
+        print "checking if " + arg
+        #pDebug(arg)
+        if replace: 
+            pBadArg(arg)
+        elif find:
+            replace = ' '
+        else:
+            find = ' '
+
     elif prev == "-c":
         if not prev: 
-            pBadArg(sys.argv[arg])
+            pBadArg(arg)
 
         if replace: 
-            pBadArg(sys.argv[arg])
+            pBadArg(arg)
         elif find: 
-            replace = sys.argv[arg]
+            replace = arg
         else:
-            find = sys.argv[arg]
+            find = arg
 
-    elif isInt(sys.argv[arg]):
+    elif isInt(arg):
         if not prev: 
-            pBadArg(sys.argv[arg])
+            pBadArg(arg)
 
         elif prev == "-s":
-            spaces = int(sys.argv[arg])
+            spaces = int(arg)
         elif prev == "-t":
-            tabs = int(sys.argv[arg])
+            tabs = int(arg)
         else:
-            pBadArg(sys.argv[arg])
+            pBadArg(arg)
 
-    elif sys.argv[arg] in commands: 
-        print "command " + sys.argv[arg] + " is good"
+    elif arg in commands: 
+        print "command " + arg + " is good"
 
     else:
-        pBadArg(sys.argv[arg])
+        pBadArg(arg)
 
-    prev = sys.argv[arg]
+    prev = arg
 
 if tabs: 
     if replace: 
@@ -110,23 +142,29 @@ if tabs:
             find += '\t' 
 
 if spaces: 
-    if replace: 
-        pBadArg(sys.argv[arg])
-     
-    elif find: 
-        replace  = ""
-        for x in range(0,spaces):
-            replace += ' ' 
-    else:
-        find = ""
-        for x in range(0,spaces):
-            find += ' ' 
+    if find == ' ':
+        for x in range(1,spaces):
+            find += ' '
+    elif replace == ' ':
+        for x in range(1,spaces):
+            replace += ' '
 
+if tabs:
+    if find == '\t':
+        for x in range(1,tabs):
+            find += '\t'
+    elif replace == '\t':
+        for x in range(1,tabs):
+            replace += '\t'
+
+#pdb.set_trace()
 if find and replace: 
     if not hasFile:
         source = sys.stdin.read()        
 
-    for line in source:
-        print source.replace(find, replace)
+    #for line in source:
+    sys.stdout.write(repr(source.replace(find, replace)))
+    sys.stdout.write('\n')
+    sys.stdout.write(source.replace(find, replace))
 
 else: pUsage()
