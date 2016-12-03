@@ -13,13 +13,16 @@
 #       CHAR is the character sequence                      #
 #   -i --indent-only                                        #
 #       only change indents                                 #
+#   -f --first NUM                                          #
+#       only replace first NUM occurrences, defaults        #
+#       to 1                                                #
 #############################################################
 
 import sys
 import os
 import pdb
 
-commands = ['-c','--characters','-s','--space','-t','--tab','-i']
+commands = ['-c','--characters','-s','--space','-t','--tab','-i','--indent-only','-f','--first']
 
 print sys.argv
 
@@ -31,7 +34,7 @@ def pBadArg(arg):
     quit()
 
 def pUsage():
-    print "Usage: "
+    sys.stdout.write("Usage: ")
     quit()
 
 def isInt(arg):
@@ -79,7 +82,7 @@ for arg in sys.argv:
         else:
             pBadArg(arg)
 
-    elif arg == "-t":
+    elif arg == "-t" or arg == "--tab":
         print "checking if " + arg
         #pDebug(arg)
         if replace:
@@ -89,7 +92,7 @@ for arg in sys.argv:
         else:
             find = '\t'
 
-    elif arg == "-s":
+    elif arg == "-s" or arg == "--space":
         print "checking if " + arg
         #pDebug(arg)
         if replace: 
@@ -99,7 +102,7 @@ for arg in sys.argv:
         else:
             find = ' '
 
-    elif prev == "-c":
+    elif prev == "-c" or prev == "--characters":
         if not prev: 
             pBadArg(arg)
 
@@ -162,7 +165,6 @@ if find and replace:
     if not hasFile:
         source = sys.stdin.read()        
 
-    #for line in source:
     sys.stdout.write(repr(source.replace(find, replace)))
     sys.stdout.write('\n')
     sys.stdout.write(source.replace(find, replace))
